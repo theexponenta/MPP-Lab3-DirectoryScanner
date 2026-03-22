@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="DirectoryScanner.Core/DirectoryScanner.Core.csproj" />
+  <Project Path="DirectoryScanner.Tests/DirectoryScanner.Tests.csproj" />
+</Solution>
