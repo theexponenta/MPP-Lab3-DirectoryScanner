@@ -46,16 +46,23 @@
             <StackPanel Orientation="Horizontal"
                         Spacing="8"
                         IsVisible="{Binding ShowInTree}">
-              <Panel Width="18" Height="18" VerticalAlignment="Center">
-                <Path Stretch="Uniform"
-                      Fill="{DynamicResource TextFillColorPrimaryBrush}"
-                      IsVisible="{Binding IsFolder}"
-                      Data="M10,4 L8,4 L8,2 L4,2 L4,4 L2,4 C0.9,4 0,4.9 0,6 L0,18 C0,19.1 0.9,20 2,20 L18,20 C19.1,20 20,19.1 20,18 L20,8 C20,6.9 19.1,6 18,6 L10,6 Z" />
-                <Path Stretch="Uniform"
-                      Fill="{DynamicResource TextFillColorSecondaryBrush}"
-                      IsVisible="{Binding IsFile}"
-                      Data="M14,2 L6,2 C4.9,2 4,2.9 4,4 L4,20 C4,21.1 4.9,22 6,22 L18,22 C19.1,22 20,21.1 20,20 L20,8 L14,2 Z M13,9 L13,3.5 L18.5,9 Z M8,12 L16,12 L16,14 L8,14 Z M8,16 L16,16 L16,18 L8,18 Z" />
-              </Panel>
+              <!-- Foreground у TreeViewItem задаёт тема; DynamicResource для кистей текста здесь часто не подхватывается внутри шаблона. -->
+              <Viewbox Width="16"
+                       Height="16"
+                       VerticalAlignment="Center"
+                       Stretch="Uniform">
+                <Panel Width="24" Height="24">
+                  <Path Stretch="Uniform"
+                        IsVisible="{Binding IsFolder}"
+                        Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TreeViewItem}}"
+                        Data="M10,4 L8,4 L8,2 L4,2 L4,4 L2,4 C0.9,4 0,4.9 0,6 L0,18 C0,19.1 0.9,20 2,20 L18,20 C19.1,20 20,19.1 20,18 L20,8 C20,6.9 19.1,6 18,6 L10,6 Z" />
+                  <Path Stretch="Uniform"
+                        IsVisible="{Binding IsFile}"
+                        Opacity="0.78"
+                        Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TreeViewItem}}"
+                        Data="M14,2 L6,2 C4.9,2 4,2.9 4,4 L4,20 C4,21.1 4.9,22 6,22 L18,22 C19.1,22 20,21.1 20,20 L20,8 L14,2 Z M13,9 L13,3.5 L18.5,9 Z M8,12 L16,12 L16,14 L8,14 Z M8,16 L16,16 L16,18 L8,18 Z" />
+                </Panel>
+              </Viewbox>
               <TextBlock VerticalAlignment="Center"
                          Text="{Binding SizeAndPercentText}"
                          TextWrapping="NoWrap" />
