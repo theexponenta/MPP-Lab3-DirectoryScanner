@@ -1,0 +1,68 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DirectoryScanner.GUI.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DesignWidth="900" d:DesignHeight="560"
+        x:Class="DirectoryScanner.GUI.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="Сканер каталогов"
+        MinWidth="640" MinHeight="420">
+  <DockPanel Margin="12">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,12">
+      <TextBox MinWidth="360"
+               VerticalAlignment="Center"
+               Watermark="Путь к каталогу"
+               Text="{Binding SelectedPath}" />
+      <Button Content="Обзор…"
+              Command="{Binding BrowseCommand}"
+              Padding="12,6" />
+      <Button Content="Сканировать"
+              Command="{Binding ScanCommand}"
+              Padding="12,6" />
+      <Button Content="Отмена"
+              Command="{Binding CancelCommand}"
+              Padding="12,6" />
+      <TextBlock Text="Потоков:" VerticalAlignment="Center" />
+      <NumericUpDown Width="100"
+                     Minimum="1"
+                     Maximum="256"
+                     Value="{Binding MaxWorkers}" />
+    </StackPanel>
+    <TextBlock DockPanel.Dock="Bottom"
+               Margin="0,12,0,0"
+               TextWrapping="Wrap"
+               Text="{Binding StatusMessage}" />
+    <Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="4"
+            Padding="4">
+      <TreeView x:Name="ScanTree"
+                ItemsSource="{Binding RootNodes}">
+        <TreeView.ItemTemplate>
+          <TreeDataTemplate x:DataType="vm:ExplorerNodeViewModel"
+                            ItemsSource="{Binding Children}">
+            <StackPanel Orientation="Horizontal"
+                        Spacing="8"
+                        IsVisible="{Binding ShowInTree}">
+              <Panel Width="18" Height="18" VerticalAlignment="Center">
+                <Path Stretch="Uniform"
+                      Fill="{DynamicResource TextFillColorPrimaryBrush}"
+                      IsVisible="{Binding IsFolder}"
+                      Data="M10,4 L8,4 L8,2 L4,2 L4,4 L2,4 C0.9,4 0,4.9 0,6 L0,18 C0,19.1 0.9,20 2,20 L18,20 C19.1,20 20,19.1 20,18 L20,8 C20,6.9 19.1,6 18,6 L10,6 Z" />
+                <Path Stretch="Uniform"
+                      Fill="{DynamicResource TextFillColorSecondaryBrush}"
+                      IsVisible="{Binding IsFile}"
+                      Data="M14,2 L6,2 C4.9,2 4,2.9 4,4 L4,20 C4,21.1 4.9,22 6,22 L18,22 C19.1,22 20,21.1 20,20 L20,8 L14,2 Z M13,9 L13,3.5 L18.5,9 Z M8,12 L16,12 L16,14 L8,14 Z M8,16 L16,16 L16,18 L8,18 Z" />
+              </Panel>
+              <TextBlock VerticalAlignment="Center"
+                         Text="{Binding SizeAndPercentText}"
+                         TextWrapping="NoWrap" />
+            </StackPanel>
+          </TreeDataTemplate>
+        </TreeView.ItemTemplate>
+      </TreeView>
+    </Border>
+  </DockPanel>
+</Window>
