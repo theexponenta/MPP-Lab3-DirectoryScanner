@@ -16,45 +16,46 @@ public class DirectoryScanner
         }
     }
 
-    private IDirectoryProvider directoryProvider;
-    private int maxWorkers = 0;
-    private int workersCount = 0;
-    private volatile int dirsLeft = 0;
-    private ConcurrentQueue<ScanTask> tasks = new ConcurrentQueue<ScanTask>();
-    private ConcurrentDictionary<string, DirectoryScanInfo> symlinks = new ConcurrentDictionary<string, DirectoryScanInfo>();
-    private CancellationTokenSource cts = new CancellationTokenSource();
+    private IDirectoryProvider _directoryProvider;
+    private int _maxWorkers = 0;
+    private int _workersCount = 0;
+    private int _tasksLeft = 0;
+    private ConcurrentQueue<ScanTask> _tasks = new();
+    private ConcurrentDictionary<string, DirectoryScanInfo> _symlinks = new();
+    private CancellationTokenSource _cts = new();
+
     public DirectoryScanInfo? Result {get; private set;}
     public event EventHandler? Completed;
 
     public DirectoryScanner(IDirectoryProvider directoryProvider)
     {
-        this.directoryProvider = directoryProvider;
+        _directoryProvider = directoryProvider;
     }
 
     public DirectoryScanner() : this(new FileSystemDirectoryProvider()) {}
 
     protected virtual void OnCompleted() 
     {
-        cts.Dispose();
-        symlinks.Clear();
-        tasks.Clear();
+        _cts.Dispose();
+        _symlinks.Clear();
+        _tasks.Clear();
         Completed?.Invoke(this, EventArgs.Empty);
     }
 
     private void EnqueueTask(ScanTask task)
     {
-        Interlocked.Increment(ref dirsLeft);
-        tasks.Enqueue(task);
-        if (workersCount < maxWorkers)
+        Interlocked.Increment(ref _tasksLeft);
+        _tasks.Enqueue(task);
+        if (_workersCount < _maxWorkers)
         {
-            int newValue = Interlocked.Increment(ref workersCount);
-            if (newValue <= maxWorkers)
+            int newValue = Interlocked.Increment(ref _workersCount);
+            if (newValue <= _maxWorkers)
             {
-                ThreadPool.QueueUserWorkItem(ProcessDirectories, cts.Token);
+                ThreadPool.QueueUserWorkItem(ProcessDirectories, _cts.Token);
             } 
             else
             {
-                Interlocked.Decrement(ref workersCount);
+                Interlocked.Decrement(ref _workersCount);
             }
         }
     }
@@ -68,13 +69,13 @@ public class DirectoryScanner
 
         while (!token.IsCancellationRequested)
         {
-            if (dirsLeft == 0)
+            if (_tasksLeft == 0)
             {
                 return;
             }
 
             ScanTask task;
-            if (!tasks.TryDequeue(out task!))
+            if (!_tasks.TryDequeue(out task!))
             {
                 Thread.Yield();                
                 continue;        
@@ -87,7 +88,7 @@ public class DirectoryScanner
                 DirectoryScanInfo subdirScanInfo = new DirectoryScanInfo(subdirInfo.Name, linkTarget is not null);
                 if (linkTarget is not null)
                 {
-                    DirectoryScanInfo symlinkScanInfo = symlinks.GetOrAdd(linkTarget, subdirScanInfo);
+                    DirectoryScanInfo symlinkScanInfo = _symlinks.GetOrAdd(linkTarget, subdirScanInfo);
                     if (subdirScanInfo != symlinkScanInfo)
                     {
                         needEnqueue = false;
@@ -108,7 +109,7 @@ public class DirectoryScanner
                 task.directoryScanInfo.AddFile(fileScanInfo);
             }
 
-            int newDirsLeft = Interlocked.Decrement(ref dirsLeft);
+            int newDirsLeft = Interlocked.Decrement(ref _tasksLeft);
             if (newDirsLeft == 0)
             {
                 OnCompleted();
@@ -116,7 +117,7 @@ public class DirectoryScanner
             }
         }
 
-        int newWorkersCount = Interlocked.Decrement(ref workersCount);
+        int newWorkersCount = Interlocked.Decrement(ref _workersCount);
         if (newWorkersCount == 0)
         {
             OnCompleted();
@@ -125,14 +126,14 @@ public class DirectoryScanner
 
     public void StartScan(string path, int maxWorkers)
     {
-        IDirectoryInfo directoryInfo = directoryProvider.GetDirectory(path);
+        IDirectoryInfo directoryInfo = _directoryProvider.GetDirectory(path);
 
-        tasks.Clear();
-        symlinks.Clear();
-        workersCount = 0;
-        this.maxWorkers = maxWorkers;
-        cts.Dispose();
-        cts = new CancellationTokenSource();
+        _tasks.Clear();
+        _symlinks.Clear();
+        _workersCount = 0;
+        this._maxWorkers = maxWorkers;
+        _cts.Dispose();
+        _cts = new CancellationTokenSource();
 
         Result = new DirectoryScanInfo(directoryInfo.Name, directoryInfo.LinkTarget is not null);
         EnqueueTask(new ScanTask(directoryInfo, Result));
@@ -153,6 +154,6 @@ public class DirectoryScanner
 
     public void Cancel()
     {
-        cts.Cancel();
+        _cts.Cancel();
     }
 }

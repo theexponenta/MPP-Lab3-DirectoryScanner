@@ -6,25 +6,25 @@ class FakeDirectoryInfo : IDirectoryInfo
 {
     public string Name {get;}
     public string? LinkTarget {get;}
-    public int DirectoriesCount { get { return directories.Count; } }
-    public int FilesCount { get { return files.Count; } }
+    public int DirectoriesCount { get { return _directories.Count; } }
+    public int FilesCount { get { return _files.Count; } }
     
-    private List<FakeDirectoryInfo> directories;
-    private List<FakeFileInfo> files;
-    private int delay;
+    private List<FakeDirectoryInfo> _directories;
+    private List<FakeFileInfo> _files;
+    private int _delay;
 
 
     public FakeDirectoryInfo(string name, string? linkTarget, List<FakeFileInfo> files, List<FakeDirectoryInfo> directories, int delay = 0)
     {
         Name = name;
         LinkTarget = linkTarget;
-        this.directories = directories;
-        this.files = files;
-        this.delay = delay;
+        _directories = directories;
+        _files = files;
+        _delay = delay;
     }
 
     public FakeDirectoryInfo(string name, string linkTarget, FakeDirectoryInfo symlinkTo) 
-        : this(name, linkTarget, symlinkTo.files, symlinkTo.directories)
+        : this(name, linkTarget, symlinkTo._files, symlinkTo._directories)
     {   
     }
 
@@ -35,11 +35,11 @@ class FakeDirectoryInfo : IDirectoryInfo
 
     public IEnumerable<IDirectoryInfo> EnumerateDirectories()
     {
-        foreach (IDirectoryInfo directory in directories)
+        foreach (IDirectoryInfo directory in _directories)
         {
-            if (delay > 0)
+            if (_delay > 0)
             {
-                Thread.Sleep(delay);
+                Thread.Sleep(_delay);
             }
 
             yield return directory;
@@ -48,11 +48,11 @@ class FakeDirectoryInfo : IDirectoryInfo
 
     public IEnumerable<IFileInfo> EnumerateFiles()
     {
-        foreach (IFileInfo file in files)
+        foreach (IFileInfo file in _files)
         {
-            if (delay > 0)
+            if (_delay > 0)
             {
-                Thread.Sleep(delay);
+                Thread.Sleep(_delay);
             }
 
             yield return file;
@@ -61,12 +61,12 @@ class FakeDirectoryInfo : IDirectoryInfo
 
     public void AddDirectory(FakeDirectoryInfo directory)
     {
-        directories.Add(directory);
+        _directories.Add(directory);
     }
 
     public FakeDirectoryInfo? GetDirectory(string name)
     {
-        foreach (FakeDirectoryInfo directory in directories)
+        foreach (FakeDirectoryInfo directory in _directories)
         {
             if (directory.Name == name)
             {
@@ -79,7 +79,7 @@ class FakeDirectoryInfo : IDirectoryInfo
 
     public bool HasFile(string name)
     {
-        foreach (FakeFileInfo file in files)
+        foreach (FakeFileInfo file in _files)
         {
             if (file.Name == name)
             {

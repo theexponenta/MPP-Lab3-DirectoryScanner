@@ -4,15 +4,15 @@ using DirectoryScanner.Core;
 
 internal class FakeDirectoryProvider : IDirectoryProvider
 {
-    private FakeDirectoryInfo directory;
+    private FakeDirectoryInfo _directory;
 
     public FakeDirectoryProvider(FakeDirectoryInfo directory)
     {
-        this.directory = directory;
+        _directory = directory;
     }
 
     public IDirectoryInfo GetDirectory(string path)
     {
-        return directory;
+        return _directory;
     }
 }

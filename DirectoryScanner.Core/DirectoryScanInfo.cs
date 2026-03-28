@@ -9,37 +9,37 @@ public class DirectoryScanInfo
     {
         get
         {
-            if (size >= 0)
-                return size;
+            if (_size >= 0)
+                return _size;
             
-            size = 0;
-            foreach (FileScanInfo fileScanInfo in files)
+            _size = 0;
+            foreach (FileScanInfo fileScanInfo in _files)
             {
                 if (!fileScanInfo.IsSymlink)
                 {
-                    size += fileScanInfo.Size;
+                    _size += fileScanInfo.Size;
                 }
             }
 
-            foreach (DirectoryScanInfo directoryScanInfo in directories.Values)
+            foreach (DirectoryScanInfo directoryScanInfo in _directories.Values)
             {
                 if (!directoryScanInfo.IsSymlink)
                 {
-                    size += directoryScanInfo.Size;
+                    _size += directoryScanInfo.Size;
                 }
             }
 
-            return size;
+            return _size;
         }
     }
 
-    public int DirectoriesCount { get { return directories.Count; } }
-    public int FilesCount { get { return files.Count; } }
+    public int DirectoriesCount { get { return _directories.Count; } }
+    public int FilesCount { get { return _files.Count; } }
     public bool IsSymlink { get; }
 
-    private long size = -1;
-    private Dictionary<string, DirectoryScanInfo> directories = new Dictionary<string, DirectoryScanInfo>();
-    private HashSet<FileScanInfo> files = new HashSet<FileScanInfo>();
+    private long _size = -1;
+    private Dictionary<string, DirectoryScanInfo> _directories = new();
+    private HashSet<FileScanInfo> _files = new();
 
     internal DirectoryScanInfo(string name, bool isSymlink)
     {
@@ -49,13 +49,13 @@ public class DirectoryScanInfo
 
     internal void CopyAsSymlink(DirectoryScanInfo other)
     {
-        directories = other.directories;
-        files = other.files;
+        _directories = other._directories;
+        _files = other._files;
     }
 
     internal void AddDirectory(DirectoryScanInfo directory)
     {
-        if (!directories.TryAdd(directory.Name, directory))
+        if (!_directories.TryAdd(directory.Name, directory))
         {
             throw new DirectoryAlreadyExistsException(directory.Name);
         }
@@ -63,18 +63,18 @@ public class DirectoryScanInfo
 
     internal void AddFile(FileScanInfo file)
     {
-        if (files.Contains(file))
+        if (_files.Contains(file))
         {
             throw new FileAlreadyExistsException(file.Name);
         }
 
-        files.Add(file);
+        _files.Add(file);
     }
 
     public DirectoryScanInfo? GetDirectory(string name)
     {
         DirectoryScanInfo? directory;
-        if (directories.TryGetValue(name, out directory))
+        if (_directories.TryGetValue(name, out directory))
         {
             return directory;
         }
@@ -84,11 +84,11 @@ public class DirectoryScanInfo
 
     public IEnumerable<DirectoryScanInfo> EnumerateDirectories()
     {
-        return directories.Values.AsEnumerable();
+        return _directories.Values.AsEnumerable();
     }
 
     public IEnumerable<FileScanInfo> EnumerateFiles()
     {
-        return files.AsEnumerable();
+        return _files.AsEnumerable();
     }
 }
